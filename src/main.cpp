@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 // GPIO 14 für den kapazitiven Sensor
-#define SOIL_PIN 16
+#define SOIL_PIN 14
 
 void setup() {
     Serial.begin(115200);
@@ -19,3 +19,10 @@ void loop() {
 
     delay(1000);
 }
+
+// fix: GND-Verkabelung korrigiert und Sensor-Baselines ermittelt
+
+// * Fehlerhaften GND-Pin (rechts unten) identifiziert und auf funktionierenden Masse-Pin (links oben unter 5V) gewechselt
+// * Serielle Kommunikation und Status-LED laufen stabil
+// * Kalibrierungswerte dokumentiert: Luft (Trockenwert) = ~2500, Wasser (Nasswert) = ~471
+// * Umgebungsluftfeuchtigkeit bei Testlauf: 49%
