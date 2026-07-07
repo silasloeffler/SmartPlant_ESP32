@@ -1,9 +1,17 @@
 #include <Arduino.h>
 #include <WiFi.h>
-#include "secrets.h" // Lädt die Zugangsdaten lokal
-
+#include "soc/soc.h"             // Wird für den Brownout-Fix benötigt
+#include "soc/rtc_cntl_reg.h"    // Wird für den Brownout-Fix benötigt
+#include "secrets.h"
 
 void setup() {
+    WRITE_PERI_REG(0x3ff4800c, 0); // Deaktiviert den Brownout-Schutz direkt über die Register-Adresse
+
+    Serial.begin(115200);
+    delay(2000);
+    Serial.println("\n--- WiFi Test Start ---");
+
+    // ... Rest deines WLAN-Codes
     Serial.begin(115200);
     delay(2000);
     Serial.println("\n--- WiFi Test Start ---");
