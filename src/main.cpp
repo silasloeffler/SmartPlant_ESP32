@@ -17,6 +17,7 @@
 // LEDs
 #define FLASH_LED_PIN 4
 #define STATUS_LED_PIN 33   // kleine rote LED, active LOW
+#define WARN_LED_PIN 16
 
 // ==========================
 // Kamera-Pins AI Thinker ESP32-CAM
@@ -165,6 +166,28 @@ bool connectWiFi() {
     return false;
 }
 
+void warnLedInit() {
+    pinMode(WARN_LED_PIN, OUTPUT);
+    digitalWrite(WARN_LED_PIN, HIGH); // active LOW: aus
+}
+
+void warnLedOn() {
+    digitalWrite(WARN_LED_PIN, LOW);  // active LOW: an
+}
+
+void warnLedOff() {
+    digitalWrite(WARN_LED_PIN, HIGH); // active LOW: aus
+}
+
+void warnLedBlink(int times, int onMs = 200, int offMs = 200) {
+    for (int i = 0; i < times; i++) {
+        warnLedOn();
+        delay(onMs);
+        warnLedOff();
+        delay(offMs);
+    }
+}
+
 // ==========================
 // Setup
 // ==========================
@@ -193,6 +216,9 @@ void setup() {
     pinMode(PIN_TEMP, INPUT);
 
     analogReadResolution(12);
+
+    warnLedInit();
+    warnLedBlink(2); // Startsignal: Hardware lebt
 
     // Messbereich bis ca. 3.3V
     analogSetPinAttenuation(PIN_SOIL, ADC_11db);
@@ -245,13 +271,52 @@ void setup() {
 
     Serial.println("==================================");
     Serial.println("Test abgeschlossen. Loop blinkt nur noch.");
+
+    if (cameraOk && photoOk && wifiOk) {
+        Serial.println();
+        Serial.println("GESAMT: OK - Hardware grundsaetzlich loetbereit.");
+
+        // Alles gut: einmal kurz blinken, dann aus
+        warnLedBlink(1, 500, 200);
+        warnLedOff();
+
+    } else {
+        Serial.println();
+        Serial.println("GESAMT: FEHLER.");
+
+        // Fehler: LED dauerhaft an
+        warnLedOn();
+    }
+    // WiFi wieder ausschalten, damit ADC2-Sensoren live gelesen werden koennen.
+    Serial.println();
+    Serial.println("Schalte WiFi fuer Live-Sensortest wieder aus...");
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    delay(1000);
+
+    Serial.println("Live-Sensortest startet jetzt im loop().");
 }
 
 void loop() {
-    // Keine Sensorwerte nach WiFi lesen.
-    // Nur Lebenszeichen.
-    digitalWrite(FLASH_LED_PIN, HIGH);
-    delay(100);
-    digitalWrite(FLASH_LED_PIN, LOW);
-    delay(1900);
+    int soilRaw  = readAverageAnalog(PIN_SOIL, 5);
+    int lightRaw = readAverageAnalog(PIN_LIGHT, 5);
+    int tempRaw  = readAverageAnalog(PIN_TEMP, 5);
+
+    Serial.printf(
+        "LIVE | Boden: %d | Licht: %d | Temp: %d\n",
+        soilRaw,
+        lightRaw,
+        tempRaw
+    );
+
+    // Beispiel-Logik fuer LED:
+    // Bei sehr trockenem Boden LED an, sonst aus.
+    // Grenzwert spaeter sauber kalibrieren.
+    if (soilRaw > 3000) {
+        warnLedOn();   // active LOW: LED an
+    } else {
+        warnLedOff();  // LED aus
+    }
+
+    delay(1000);
 }
