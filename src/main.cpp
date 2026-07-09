@@ -301,6 +301,8 @@ void loop() {
     int soilRaw  = readAverageAnalog(PIN_SOIL, 5);
     int lightRaw = readAverageAnalog(PIN_LIGHT, 5);
     int tempRaw  = readAverageAnalog(PIN_TEMP, 5);
+    warnLedBlink(1, 500, 200);
+    warnLedOff();
 
     Serial.printf(
         "LIVE | Boden: %d | Licht: %d | Temp: %d\n",
