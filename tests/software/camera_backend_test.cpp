@@ -326,7 +326,6 @@ void printMenu() {
     Serial.println("p = nur lokaler Kameratest, ohne WLAN und Backend");
     Serial.println("t = Transporttest zum Backend");
     Serial.println("h = Hilfe anzeigen");
-    Serial.println("r = Software-Neustart");
     Serial.println();
     Serial.println("Auswahl eingeben und senden:");
 }
@@ -355,7 +354,7 @@ void setup() {
 void loop() {
     static bool testExecuted = false;
 
-    if (Serial.available() == 0) {
+    if (testExecuted || Serial.available() == 0) {
         return;
     }
 
@@ -366,18 +365,6 @@ void loop() {
 
     if (command == 'h') {
         printMenu();
-        return;
-    }
-
-    if (command == 'r') {
-        Serial.println("Software-Neustart...");
-        delay(200);
-        ESP.restart();
-        return;
-    }
-
-    if (testExecuted) {
-        Serial.println("Test bereits abgeschlossen. Mit r neu starten.");
         return;
     }
 

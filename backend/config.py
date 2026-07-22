@@ -20,11 +20,22 @@ def _read_int(name: str, default: int, minimum: int, maximum: int) -> int:
     return value
 
 
+def _read_bool(name: str, default: bool) -> bool:
+    value = os.getenv(name, str(default)).strip().lower()
+    if value in {"1", "true", "yes", "on"}:
+        return True
+    if value in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"{name} must be true or false")
+
+
 APP_HOST = os.getenv("APP_HOST", "0.0.0.0")
 APP_PORT = _read_int("APP_PORT", 8000, 1, 65535)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
+GEMINI_ENABLED = _read_bool("GEMINI_ENABLED", False)
+SAVE_DEBUG_IMAGE = _read_bool("SAVE_DEBUG_IMAGE", True)
 if not GEMINI_MODEL:
     raise ValueError("GEMINI_MODEL must not be empty")
 
